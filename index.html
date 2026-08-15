@@ -650,6 +650,9 @@
   document.querySelectorAll('.logo-img').forEach(img => img.src = LOGO_SRC);
 </script>
 <script>
+  // URL de tu Google Apps Script (Web App). Pegala acá cuando la tengas.
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbejFo5_NsAHWQY4bVWXRr1NwlqvUBCQ75K5GfLDBGfKFfd2_9NQJLvp702QYvu-fRyg/exec";
+
   const state = { service:null, dayLabel:null, dayDate:null, time:null };
 
   // ---- Selección de fecha (calendario completo, martes a sábado) ----
@@ -751,6 +754,22 @@
     }
     const msg = `Hola MR Barber! Quiero reservar un turno.%0A%0AServicio: ${encodeURIComponent(state.service)}%0ADía: ${encodeURIComponent(state.dayLabel)}%0AHorario: ${encodeURIComponent(state.time)}%0ANombre: ${encodeURIComponent(name)}%0AMi WhatsApp: ${encodeURIComponent(phone)}`;
     const waLink = `https://wa.me/5493472642657?text=${msg}`;
+
+    // Guarda el turno en la planilla de Google Sheets (si ya conectaste el script)
+    if(SCRIPT_URL && SCRIPT_URL.startsWith('https://')){
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          nombre: name,
+          telefono: phone,
+          servicio: state.service,
+          dia: state.dayLabel,
+          horario: state.time
+        })
+      }).catch(()=>{ /* si falla el guardado, igual seguimos a WhatsApp */ });
+    }
 
     document.getElementById('modalName').textContent = name.split(' ')[0];
     document.getElementById('modalService').textContent = state.service || '—';
